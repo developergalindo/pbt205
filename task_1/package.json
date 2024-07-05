@@ -9,6 +9,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "amqplib": "^0.10.4"
+    "amqplib": "^0.10.4",
+    "express": "^4.19.2",
+    "ws": "^8.17.1"
   }
 }

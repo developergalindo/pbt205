@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <style>
+        #chat {
+            width: 100%;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat Room</h1>
+    <input type="text" id="username" placeholder="Enter username" /><br/>
+    <textarea id="chat" readonly></textarea><br/>
+    <input type="text" id="message" placeholder="Enter message" />
+    <button id="send" disabled>Send</button>
+
+    <script>
+        const sendButton = document.getElementById('send');
+        const usernameInput = document.getElementById('username');
+        const messageInput = document.getElementById('message');
+        const chatTextarea = document.getElementById('chat');
+
+        const ws = new WebSocket('ws://localhost:3000');
+
+        ws.onopen = () => {
+            console.log('Connected to WebSocket server');
+        };
+
+        ws.onmessage = (event) => {
+            chatTextarea.value += event.data + '\n';
+            chatTextarea.scrollTop = chatTextarea.scrollHeight; // Scroll to the bottom
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            alert('WebSocket connection failed');
+        };
+
+        sendButton.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            const message = messageInput.value.trim();
+            if (username && message) {
+                fetch('/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, message })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                    chatTextarea.scrollTop = chatTextarea.scrollHeight; // Scroll to the bottom
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Failed to send message');
+                });
+                messageInput.value = '';
+                sendButton.disabled = true;
+            }
+        });
+
+        messageInput.addEventListener('input', () => {
+            sendButton.disabled = !messageInput.value.trim();
+        });
+
+        usernameInput.addEventListener('input', () => {
+            sendButton.disabled = !messageInput.value.trim();
+        });
+    </script>
+</body>
+</html>
